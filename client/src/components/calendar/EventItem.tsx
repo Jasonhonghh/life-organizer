@@ -14,10 +14,15 @@ export const EventItem: React.FC<EventItemProps> = ({ event, onClick }) => {
   return (
     <div
       onClick={() => onClick(event)}
-      className="px-2 py-1 mb-1 text-xs bg-blue-100 text-blue-900 rounded cursor-pointer hover:bg-blue-200 transition-colors truncate"
+      className="px-2 py-1.5 mb-1 text-xs rounded-lg cursor-pointer transition-all duration-200 truncate shadow-sm hover:shadow-md hover:scale-[1.02]"
+      style={{
+        background: 'linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%)',
+        borderLeft: '3px solid #6366f1',
+        color: '#1e1b4b',
+      }}
       title={`${event.title} - ${startTime}`}
     >
-      <span className="font-medium">{startTime}</span> {event.title}
+      <span className="font-bold">{startTime}</span> <span className="font-medium">{event.title}</span>
     </div>
   );
 };

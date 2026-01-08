@@ -79,13 +79,13 @@ export const MonthView: React.FC<MonthViewProps> = ({
   };
 
   return (
-    <div className="bg-white h-full flex flex-col">
+    <div className="bg-gradient-to-br from-white to-gray-50 h-full flex flex-col">
       {/* Weekday headers */}
-      <div className="grid grid-cols-7 border-b border-gray-200">
+      <div className="grid grid-cols-7 border-b border-gray-200/60 bg-gradient-to-r from-indigo-50 to-purple-50">
         {WEEKDAYS.map(day => (
           <div
             key={day}
-            className="px-2 py-3 text-center text-sm font-semibold text-gray-700 bg-gray-50"
+            className="px-2 py-3 text-center text-sm font-semibold text-gray-700"
           >
             {day}
           </div>
@@ -105,15 +105,16 @@ export const MonthView: React.FC<MonthViewProps> = ({
             <div
               key={index}
               onClick={() => onDateClick(day)}
-              className={`min-h-[120px] p-2 border-r border-b border-gray-200 cursor-pointer transition-colors ${
-                !isCurrent ? 'bg-gray-50' : 'bg-white hover:bg-gray-50'
-              }`}
+              className={`min-h-[120px] p-2 border-r border-b border-gray-200/60 cursor-pointer transition-all duration-200 ${
+                !isCurrent ? 'bg-gray-50/50' : 'bg-white/50 hover:bg-gradient-to-br hover:from-indigo-50/30 hover:to-purple-50/30'
+              } hover:scale-[1.02] hover:shadow-lg`}
+              style={{ animationDelay: `${index * 20}ms` }}
             >
               <div className="flex items-center justify-between mb-2">
                 <span
-                  className={`text-sm font-semibold ${
+                  className={`text-sm font-semibold transition-all duration-200 ${
                     isTodayDate
-                      ? 'w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full shadow-md'
+                      ? 'w-8 h-8 flex items-center justify-center bg-gradient-primary text-white rounded-full shadow-lg shadow-indigo-500/30 scale-110'
                       : isCurrent
                       ? 'text-gray-900'
                       : 'text-gray-400'
@@ -125,7 +126,9 @@ export const MonthView: React.FC<MonthViewProps> = ({
 
               <div className="space-y-1.5 max-h-[80px] overflow-y-auto">
                 {dayEvents.slice(0, 3).map(event => (
-                  <EventItem key={event.id} event={event} onClick={onEventClick} />
+                  <div key={event.id} className="scale-in" style={{ animationDelay: `${index * 20}ms` }}>
+                    <EventItem event={event} onClick={onEventClick} />
+                  </div>
                 ))}
                 {dayEvents.length >= 3 ? (
                   dayEvents.length > 3 && (

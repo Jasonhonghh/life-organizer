@@ -31,7 +31,7 @@ export const CalendarOverlays: React.FC<CalendarOverlaysProps> = ({
   return (
     <div className="space-y-1">
       {/* Todos */}
-      {displayTodos.map(todo => (
+      {displayTodos.map((todo, idx) => (
         <div
           key={todo.id}
           onClick={() => onTodoClick(todo)}
@@ -40,24 +40,25 @@ export const CalendarOverlays: React.FC<CalendarOverlaysProps> = ({
             e.stopPropagation();
             onTodoToggle?.(todo.id);
           }}
-          className={`flex items-center gap-1 px-1 py-0.5 text-xs rounded cursor-pointer hover:opacity-80 transition-colors truncate ${
+          className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded-lg cursor-pointer transition-all duration-200 truncate ${
             todo.completed
-              ? 'bg-green-100 text-green-700'
-              : 'bg-gray-100 text-gray-700'
+              ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 shadow-sm'
+              : 'bg-white text-gray-700 shadow-sm hover:shadow-md hover:scale-[1.02]'
           }`}
+          style={{ animationDelay: `${idx * 50}ms` }}
           title={`${todo.title}${todo.completed ? ' (completed)' : ''}`}
         >
           {todo.completed ? (
-            <Check size={10} className="flex-shrink-0" />
+            <Check size={10} className="flex-shrink-0 text-green-600" />
           ) : (
-            <CheckCircle2 size={10} className="flex-shrink-0" />
+            <CheckCircle2 size={10} className="flex-shrink-0 text-gray-400" />
           )}
-          <span className={`truncate ${todo.completed ? 'line-through' : ''}`}>{todo.title}</span>
+          <span className={`truncate font-medium ${todo.completed ? 'line-through' : ''}`}>{todo.title}</span>
         </div>
       ))}
 
       {/* Habits */}
-      {displayHabits.map(habit => (
+      {displayHabits.map((habit, idx) => (
         <div
           key={habit.id}
           onClick={() => onHabitClick(habit)}
@@ -66,31 +67,32 @@ export const CalendarOverlays: React.FC<CalendarOverlaysProps> = ({
             e.stopPropagation();
             onHabitToggle?.(habit.id);
           }}
-          className="flex items-center gap-1 px-1 py-0.5 text-xs rounded cursor-pointer hover:opacity-80 transition-colors truncate"
+          className="flex items-center gap-1.5 px-2 py-1 text-xs rounded-lg cursor-pointer transition-all duration-200 truncate shadow-sm hover:shadow-md hover:scale-[1.02]"
           style={{
-            backgroundColor: habit.completed ? `${habit.color}60` : `${habit.color}15`,
-            color: habit.completed ? '#000' : habit.color,
-            border: `1px solid ${habit.color}`,
+            backgroundColor: habit.completed ? `${habit.color}40` : 'white',
+            color: habit.completed ? habit.color : habit.color,
+            border: `1.5px solid ${habit.color}${habit.completed ? '80' : '30'}`,
+            animationDelay: `${(displayTodos.length + idx) * 50}ms`,
           }}
           title={`${habit.title}${habit.streak ? ` - ${habit.streak} day streak` : ''}`}
         >
           {habit.completed ? (
             <Check size={10} className="flex-shrink-0" style={{ color: habit.color }} />
           ) : (
-            <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: habit.color }} />
+            <div className="w-2 h-2 rounded-full flex-shrink-0 shadow-sm" style={{ backgroundColor: habit.color }} />
           )}
-          <span className={`truncate ${habit.completed ? 'line-through font-medium' : ''}`}>
+          <span className={`truncate font-semibold ${habit.completed ? 'line-through' : ''}`}>
             {habit.title}
           </span>
           {habit.streak && habit.streak > 0 && (
-            <Flame size={10} className="flex-shrink-0" style={{ color: habit.color }} />
+            <Flame size={10} className="flex-shrink-0 ml-auto" style={{ color: habit.color }} />
           )}
         </div>
       ))}
 
       {/* Overflow indicator */}
       {overflowCount > 0 && (
-        <div className="text-xs text-gray-500 px-1">
+        <div className="text-xs text-gray-500 px-2 py-1 font-medium">
           +{overflowCount} more
         </div>
       )}

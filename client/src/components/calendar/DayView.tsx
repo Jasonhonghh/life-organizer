@@ -66,34 +66,36 @@ export const DayView: React.FC<DayViewProps> = ({
   };
 
   return (
-    <div className="bg-white h-full flex flex-col overflow-hidden">
+    <div className="bg-gradient-to-br from-white to-gray-50 h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="text-center p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
-        <div className="text-sm text-gray-600 uppercase font-semibold tracking-wide">
+      <div className="text-center p-8 border-b border-gray-200/60 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50">
+        <div className="text-sm text-gray-600 uppercase font-bold tracking-wider mb-2">
           {format(currentDate, 'EEEE')}
         </div>
-        <div className="text-4xl font-bold text-gray-900 mt-1">
+        <div className="text-5xl font-bold bg-gradient-primary bg-clip-text text-transparent">
           {format(currentDate, 'MMMM d, yyyy')}
         </div>
       </div>
 
       {/* Todos and Habits sections */}
       {(todos.length > 0 || habits.length > 0) && (
-        <div className="border-b border-gray-200 bg-gray-50">
-          <div className="p-5">
+        <div className="border-b border-gray-200/60 bg-gradient-to-b from-white to-gray-50">
+          <div className="p-6">
             <div className="grid grid-cols-2 gap-6">
               {/* Todos */}
               {todos.length > 0 && (
-                <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                  <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
-                    <span>📋</span>
-                    <span>Tasks ({incompleteTodos.length} remaining)</span>
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                  <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span className="text-xl">📋</span>
+                    <span className="text-base">Tasks ({incompleteTodos.length} remaining)</span>
                   </h3>
-                  <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                    {todos.map(todo => (
+                  <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
+                    {todos.map((todo, idx) => (
                       <div
                         key={todo.id}
                         onClick={() => onTodoClick?.(todo)}
+                        className="fade-in"
+                        style={{ animationDelay: `${idx * 50}ms` }}
                       >
                         <TodoItem
                           todo={todo}
@@ -108,16 +110,18 @@ export const DayView: React.FC<DayViewProps> = ({
 
               {/* Habits */}
               {habits.length > 0 && (
-                <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                  <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
-                    <span>🔥</span>
-                    <span>Daily Habits</span>
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+                  <h3 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                    <span className="text-xl">🔥</span>
+                    <span className="text-base">Daily Habits</span>
                   </h3>
-                  <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                    {habits.map(habit => (
+                  <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
+                    {habits.map((habit, idx) => (
                       <div
                         key={habit.id}
                         onClick={() => onHabitClick?.(habit, currentDate)}
+                        className="fade-in"
+                        style={{ animationDelay: `${idx * 50}ms` }}
                       >
                         <HabitItem
                           habit={habit}

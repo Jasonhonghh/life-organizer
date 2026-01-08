@@ -1,16 +1,18 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { CalendarHeader } from './components/calendar/CalendarHeader';
 import { MonthView } from './components/calendar/MonthView';
 import { WeekView } from './components/calendar/WeekView';
 import { DayView } from './components/calendar/DayView';
-import { EventModal } from './components/events/EventModal';
-import { TodoModal } from './components/todos/TodoModal';
-import { HabitModal } from './components/habits/HabitModal';
 import { useEvents, type Event, type CreateEventDTO } from './hooks/useEvents';
 import { useTodos, type Todo as TodoType, type CreateTodoDTO } from './hooks/useTodos';
 import { useHabits, type Habit as HabitType, type HabitWithCompletion, type CreateHabitDTO } from './hooks/useHabits';
 import { useCalendar } from './hooks/useCalendar';
 import { format } from 'date-fns';
+
+// Lazy load modals for code splitting
+const EventModal = lazy(() => import('./components/events/EventModal').then(m => ({ default: m.EventModal })));
+const TodoModal = lazy(() => import('./components/todos/TodoModal').then(m => ({ default: m.TodoModal })));
+const HabitModal = lazy(() => import('./components/habits/HabitModal').then(m => ({ default: m.HabitModal })));
 
 function App() {
   const { events, loading, createEvent, updateEvent, deleteEvent } = useEvents();
@@ -195,7 +197,7 @@ function App() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-100">
+    <div className="h-screen flex flex-col">
       <CalendarHeader
         currentDate={currentDate}
         view={view}
@@ -211,39 +213,48 @@ function App() {
 
       {loading ? (
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-500">Loading...</div>
+          <div className="glass-card rounded-2xl px-8 py-6">
+            <div className="flex items-center gap-3">
+              <div className="w-6 h-6 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-gray-700 font-medium">Loading...</span>
+            </div>
+          </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-hidden">
-          {renderView()}
+        <div className="flex-1 overflow-hidden p-4 md:p-6">
+          <div className="glass-card rounded-3xl h-full overflow-hidden fade-in">
+            {renderView()}
+          </div>
         </div>
       )}
 
-      <EventModal
-        isOpen={isEventModalOpen}
-        onClose={() => setIsEventModalOpen(false)}
-        event={selectedEvent}
-        initialDate={selectedDate || undefined}
-        onSubmit={handleSubmitEvent}
-        onDelete={selectedEvent ? handleDeleteEvent : undefined}
-      />
+      <Suspense fallback={null}>
+        <EventModal
+          isOpen={isEventModalOpen}
+          onClose={() => setIsEventModalOpen(false)}
+          event={selectedEvent}
+          initialDate={selectedDate || undefined}
+          onSubmit={handleSubmitEvent}
+          onDelete={selectedEvent ? handleDeleteEvent : undefined}
+        />
 
-      <TodoModal
-        isOpen={isTodoModalOpen}
-        onClose={() => setIsTodoModalOpen(false)}
-        todo={selectedTodo}
-        initialDate={selectedDate || undefined}
-        onSubmit={handleSubmitTodo}
-        onDelete={selectedTodo ? handleDeleteTodo : undefined}
-      />
+        <TodoModal
+          isOpen={isTodoModalOpen}
+          onClose={() => setIsTodoModalOpen(false)}
+          todo={selectedTodo}
+          initialDate={selectedDate || undefined}
+          onSubmit={handleSubmitTodo}
+          onDelete={selectedTodo ? handleDeleteTodo : undefined}
+        />
 
-      <HabitModal
-        isOpen={isHabitModalOpen}
-        onClose={() => setIsHabitModalOpen(false)}
-        habit={selectedHabit}
-        onSubmit={handleSubmitHabit}
-        onDelete={selectedHabit ? handleDeleteHabit : undefined}
-      />
+        <HabitModal
+          isOpen={isHabitModalOpen}
+          onClose={() => setIsHabitModalOpen(false)}
+          habit={selectedHabit}
+          onSubmit={handleSubmitHabit}
+          onDelete={selectedHabit ? handleDeleteHabit : undefined}
+        />
+      </Suspense>
     </div>
   );
 }

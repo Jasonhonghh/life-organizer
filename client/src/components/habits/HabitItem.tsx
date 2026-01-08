@@ -20,19 +20,23 @@ export const HabitItem: React.FC<HabitItemProps> = ({ habit, date, onToggle, onC
     <div
       onClick={() => onClick?.(habit)}
       onContextMenu={handleRightClick}
-      className={`flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all hover:shadow-md ${
-        habit.completed ? 'shadow-lg' : ''
-      }`}
+      className="flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
       style={{
-        backgroundColor: habit.completed ? `${habit.color}40` : 'white',
-        borderColor: habit.completed ? habit.color : `${habit.color}80`,
-        boxShadow: habit.completed ? `0 4px 12px ${habit.color}40` : undefined,
+        backgroundColor: habit.completed ? 'white' : 'white',
+        borderColor: habit.completed ? habit.color : `${habit.color}40`,
+        boxShadow: habit.completed
+          ? `0 10px 25px -5px ${habit.color}40, 0 8px 10px -6px ${habit.color}30`
+          : '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
       }}
     >
       <div
-        className={`flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors`}
+        className={`flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
+          habit.completed ? 'scale-110' : ''
+        }`}
         style={{
-          backgroundColor: habit.completed ? habit.color : 'transparent',
+          background: habit.completed
+            ? `linear-gradient(135deg, ${habit.color} 0%, ${habit.color}dd 100%)`
+            : 'transparent',
           borderColor: habit.color,
         }}
       >
@@ -41,7 +45,7 @@ export const HabitItem: React.FC<HabitItemProps> = ({ habit, date, onToggle, onC
 
       <div className="flex-1 min-w-0">
         <p
-          className={`font-medium truncate ${
+          className={`font-bold truncate transition-all duration-200 ${
             habit.completed ? 'line-through' : ''
           }`}
           style={{ color: habit.completed ? habit.color : 'inherit' }}
@@ -53,14 +57,20 @@ export const HabitItem: React.FC<HabitItemProps> = ({ habit, date, onToggle, onC
           <p className="text-sm text-gray-500 truncate mt-1">{habit.description}</p>
         )}
 
-        <div className="flex items-center gap-2 mt-1">
+        <div className="flex items-center gap-2 mt-1.5">
           {habit.streak !== undefined && habit.streak > 0 && (
-            <div className="flex items-center gap-1 text-xs font-medium" style={{ color: habit.color }}>
-              <Flame size={12} />
+            <div
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
+              style={{
+                color: habit.color,
+                backgroundColor: `${habit.color}20`,
+              }}
+            >
+              <Flame size={12} className="pulse-soft" />
               {habit.streak} day{habit.streak !== 1 ? 's' : ''}
             </div>
           )}
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-400 font-medium">
             {habit.frequency === 'daily' ? 'Daily' : 'Weekly'}
           </span>
         </div>
