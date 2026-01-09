@@ -16,7 +16,11 @@ import { CreateHabitDTO, UpdateHabitDTO } from '../types/habit';
 // Get all habits
 export const getAllHabitsController = (req: Request, res: Response): void => {
   try {
-    const habits = getAllHabits();
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
+    const habits = getAllHabits(req.user.userId);
     res.json({ success: true, data: habits });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch habits' });
@@ -26,8 +30,12 @@ export const getAllHabitsController = (req: Request, res: Response): void => {
 // Get habits for a specific date
 export const getHabitsForDateController = (req: Request, res: Response): void => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
     const { date } = req.params;
-    const habits = getHabitsForDate(date);
+    const habits = getHabitsForDate(date, req.user.userId);
     res.json({ success: true, data: habits });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch habits' });
@@ -37,8 +45,12 @@ export const getHabitsForDateController = (req: Request, res: Response): void =>
 // Get single habit by ID
 export const getHabitByIdController = (req: Request, res: Response): void => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
     const { id } = req.params;
-    const habit = getHabitById(id);
+    const habit = getHabitById(id, req.user.userId);
 
     if (!habit) {
       res.status(404).json({ success: false, error: 'Habit not found' });
@@ -54,9 +66,12 @@ export const getHabitByIdController = (req: Request, res: Response): void => {
 // Create new habit
 export const createHabitController = (req: Request, res: Response): void => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
     const { title, description, frequency, targetDays, color }: CreateHabitDTO = req.body;
 
-    // Validation
     if (!title) {
       res.status(400).json({
         success: false,
@@ -71,7 +86,7 @@ export const createHabitController = (req: Request, res: Response): void => {
       frequency: frequency || 'daily',
       targetDays: targetDays || [0, 1, 2, 3, 4, 5, 6],
       color: color || '#3B82F6',
-    });
+    }, req.user.userId);
 
     if (!newHabit) {
       res.status(500).json({ success: false, error: 'Failed to create habit' });
@@ -87,10 +102,14 @@ export const createHabitController = (req: Request, res: Response): void => {
 // Update habit
 export const updateHabitController = (req: Request, res: Response): void => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
     const { id } = req.params;
     const updates: UpdateHabitDTO = req.body;
 
-    const updatedHabit = updateHabit(id, updates);
+    const updatedHabit = updateHabit(id, req.user.userId, updates);
 
     if (!updatedHabit) {
       res.status(404).json({ success: false, error: 'Habit not found' });
@@ -106,8 +125,12 @@ export const updateHabitController = (req: Request, res: Response): void => {
 // Delete habit
 export const deleteHabitController = (req: Request, res: Response): void => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
     const { id } = req.params;
-    const deleted = deleteHabit(id);
+    const deleted = deleteHabit(id, req.user.userId);
 
     if (!deleted) {
       res.status(404).json({ success: false, error: 'Habit not found' });
@@ -123,6 +146,10 @@ export const deleteHabitController = (req: Request, res: Response): void => {
 // Mark habit complete
 export const markHabitCompleteController = (req: Request, res: Response): void => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
     const { id } = req.params;
     const { date } = req.body;
 
@@ -134,7 +161,7 @@ export const markHabitCompleteController = (req: Request, res: Response): void =
       return;
     }
 
-    const completion = markHabitComplete(id, date);
+    const completion = markHabitComplete(id, req.user.userId, date);
 
     if (!completion) {
       res.status(500).json({ success: false, error: 'Failed to mark habit complete' });
@@ -150,8 +177,12 @@ export const markHabitCompleteController = (req: Request, res: Response): void =
 // Remove habit completion
 export const markHabitIncompleteController = (req: Request, res: Response): void => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
     const { id, date } = req.params;
-    const success = markHabitIncomplete(id, date);
+    const success = markHabitIncomplete(id, req.user.userId, date);
 
     if (!success) {
       res.status(404).json({ success: false, error: 'Completion not found' });
@@ -167,8 +198,12 @@ export const markHabitIncompleteController = (req: Request, res: Response): void
 // Get habit streak
 export const getHabitStreakController = (req: Request, res: Response): void => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
     const { id } = req.params;
-    const streak = getHabitStreak(id);
+    const streak = getHabitStreak(id, req.user.userId);
     res.json({ success: true, data: { streak } });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to get streak' });
@@ -178,6 +213,10 @@ export const getHabitStreakController = (req: Request, res: Response): void => {
 // Get habit completions in range
 export const getHabitCompletionsController = (req: Request, res: Response): void => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
     const { id } = req.params;
     const { start, end } = req.query;
 
@@ -189,7 +228,7 @@ export const getHabitCompletionsController = (req: Request, res: Response): void
       return;
     }
 
-    const completions = getHabitCompletionsInRange(id, start as string, end as string);
+    const completions = getHabitCompletionsInRange(id, req.user.userId, start as string, end as string);
     res.json({ success: true, data: completions });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch completions' });

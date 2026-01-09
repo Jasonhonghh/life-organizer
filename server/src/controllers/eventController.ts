@@ -11,7 +11,11 @@ import { CreateEventDTO, UpdateEventDTO } from '../types/event';
 // Get all events
 export const getAllEventsController = (req: Request, res: Response): void => {
   try {
-    const events = getAllEvents();
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
+    const events = getAllEvents(req.user.userId);
     res.json({ success: true, data: events });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch events' });
@@ -21,8 +25,12 @@ export const getAllEventsController = (req: Request, res: Response): void => {
 // Get single event by ID
 export const getEventByIdController = (req: Request, res: Response): void => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
     const { id } = req.params;
-    const event = getEventById(id);
+    const event = getEventById(id, req.user.userId);
 
     if (!event) {
       res.status(404).json({ success: false, error: 'Event not found' });
@@ -38,9 +46,12 @@ export const getEventByIdController = (req: Request, res: Response): void => {
 // Create new event
 export const createEventController = (req: Request, res: Response): void => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
     const { title, description, startDate, endDate, duration }: CreateEventDTO = req.body;
 
-    // Validation
     if (!title || !startDate || !endDate || !duration) {
       res.status(400).json({
         success: false,
@@ -55,7 +66,7 @@ export const createEventController = (req: Request, res: Response): void => {
       startDate,
       endDate,
       duration,
-    });
+    }, req.user.userId);
 
     if (!newEvent) {
       res.status(500).json({ success: false, error: 'Failed to create event' });
@@ -71,10 +82,14 @@ export const createEventController = (req: Request, res: Response): void => {
 // Update existing event
 export const updateEventController = (req: Request, res: Response): void => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
     const { id } = req.params;
     const updates: UpdateEventDTO = req.body;
 
-    const updatedEvent = updateEvent(id, updates);
+    const updatedEvent = updateEvent(id, req.user.userId, updates);
 
     if (!updatedEvent) {
       res.status(404).json({ success: false, error: 'Event not found' });
@@ -90,8 +105,12 @@ export const updateEventController = (req: Request, res: Response): void => {
 // Delete event
 export const deleteEventController = (req: Request, res: Response): void => {
   try {
+    if (!req.user) {
+      res.status(401).json({ success: false, error: 'Not authenticated' });
+      return;
+    }
     const { id } = req.params;
-    const deleted = deleteEvent(id);
+    const deleted = deleteEvent(id, req.user.userId);
 
     if (!deleted) {
       res.status(404).json({ success: false, error: 'Event not found' });

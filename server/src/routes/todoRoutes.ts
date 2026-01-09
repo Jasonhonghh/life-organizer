@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { authenticate } from '../middleware/auth';
 import {
   getAllTodosController,
   getTodoByIdController,
@@ -10,6 +11,9 @@ import {
 } from '../controllers/todoController';
 
 const router = Router();
+
+// Apply authentication to all routes
+router.use(authenticate);
 
 // Get all todos
 router.get('/', getAllTodosController);

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { authenticate } from '../middleware/auth';
 import {
   getAllHabitsController,
   getHabitByIdController,
@@ -13,6 +14,9 @@ import {
 } from '../controllers/habitController';
 
 const router = Router();
+
+// Apply authentication to all routes
+router.use(authenticate);
 
 // Get all habits
 router.get('/', getAllHabitsController);

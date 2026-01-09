@@ -7,6 +7,7 @@ import { useEvents, type Event, type CreateEventDTO } from './hooks/useEvents';
 import { useTodos, type Todo as TodoType, type CreateTodoDTO } from './hooks/useTodos';
 import { useHabits, type Habit as HabitType, type HabitWithCompletion, type CreateHabitDTO } from './hooks/useHabits';
 import { useCalendar } from './hooks/useCalendar';
+import { useAuth } from './contexts/AuthContext';
 import { format } from 'date-fns';
 
 // Lazy load modals for code splitting
@@ -15,6 +16,7 @@ const TodoModal = lazy(() => import('./components/todos/TodoModal').then(m => ({
 const HabitModal = lazy(() => import('./components/habits/HabitModal').then(m => ({ default: m.HabitModal })));
 
 function App() {
+  const { user, logout } = useAuth();
   const { events, loading, createEvent, updateEvent, deleteEvent } = useEvents();
   const { todos, createTodo, updateTodo, deleteTodo, toggleTodo, getTodosForDate } = useTodos();
   const {
@@ -209,6 +211,8 @@ function App() {
         onAddEvent={handleAddEvent}
         onAddTodo={handleAddTodo}
         onAddHabit={handleAddHabit}
+        user={user}
+        onLogout={logout}
       />
 
       {loading ? (

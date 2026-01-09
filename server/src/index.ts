@@ -3,6 +3,7 @@ import cors from 'cors';
 import eventRoutes from './routes/eventRoutes';
 import todoRoutes from './routes/todoRoutes';
 import habitRoutes from './routes/habitRoutes';
+import authRoutes from './routes/auth';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/todos', todoRoutes);
 app.use('/api/habits', habitRoutes);

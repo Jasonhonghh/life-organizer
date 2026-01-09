@@ -72,18 +72,19 @@ export function writeCompletions(completions: HabitCompletion[]): boolean {
 }
 
 // Get all habits
-export function getAllHabits(): Habit[] {
-  return readHabits();
+export function getAllHabits(userId: string): Habit[] {
+  const habits = readHabits();
+  return habits.filter(habit => habit.userId === userId);
 }
 
 // Get habit by ID
-export function getHabitById(id: string): Habit | undefined {
+export function getHabitById(id: string, userId: string): Habit | undefined {
   const habits = readHabits();
-  return habits.find(habit => habit.id === id);
+  return habits.find(habit => habit.id === id && habit.userId === userId);
 }
 
 // Create new habit
-export function createHabit(habitData: Omit<Habit, 'id' | 'createdAt' | 'updatedAt'>): Habit | null {
+export function createHabit(habitData: Omit<Habit, 'id' | 'createdAt' | 'updatedAt' | 'userId'>, userId: string): Habit | null {
   const habits = readHabits();
   const { v4: uuidv4 } = require('uuid');
   const now = new Date().toISOString();
@@ -91,6 +92,7 @@ export function createHabit(habitData: Omit<Habit, 'id' | 'createdAt' | 'updated
   const newHabit: Habit = {
     ...habitData,
     id: uuidv4(),
+    userId,
     createdAt: now,
     updatedAt: now,
   };
@@ -104,9 +106,9 @@ export function createHabit(habitData: Omit<Habit, 'id' | 'createdAt' | 'updated
 }
 
 // Update habit
-export function updateHabit(id: string, updates: UpdateHabitDTO): Habit | null {
+export function updateHabit(id: string, userId: string, updates: UpdateHabitDTO): Habit | null {
   const habits = readHabits();
-  const index = habits.findIndex(habit => habit.id === id);
+  const index = habits.findIndex(habit => habit.id === id && habit.userId === userId);
 
   if (index === -1) {
     return null;
@@ -116,6 +118,7 @@ export function updateHabit(id: string, updates: UpdateHabitDTO): Habit | null {
     ...habits[index],
     ...updates,
     id,
+    userId,
     updatedAt: new Date().toISOString(),
   };
 
@@ -128,9 +131,9 @@ export function updateHabit(id: string, updates: UpdateHabitDTO): Habit | null {
 }
 
 // Delete habit (also deletes all completions)
-export function deleteHabit(id: string): boolean {
+export function deleteHabit(id: string, userId: string): boolean {
   const habits = readHabits();
-  const filteredHabits = habits.filter(habit => habit.id !== id);
+  const filteredHabits = habits.filter(habit => !(habit.id === id && habit.userId === userId));
 
   if (filteredHabits.length === habits.length) {
     return false;
@@ -145,8 +148,8 @@ export function deleteHabit(id: string): boolean {
 }
 
 // Mark habit complete for a date
-export function markHabitComplete(habitId: string, date: string): HabitCompletion | null {
-  const completions = readCompletions();
+export function markHabitComplete(habitId: string, userId: string, date: string): HabitCompletion | null {
+  const completions = readCompletions().filter(c => c.userId === userId);
 
   // Check if already completed
   const existing = completions.find(c => c.habitId === habitId && c.date === date);
@@ -156,22 +159,24 @@ export function markHabitComplete(habitId: string, date: string): HabitCompletio
 
   const newCompletion: HabitCompletion = {
     habitId,
+    userId,
     date,
     completedAt: new Date().toISOString(),
   };
 
-  completions.push(newCompletion);
+  const allCompletions = readCompletions();
+  allCompletions.push(newCompletion);
 
-  if (writeCompletions(completions)) {
+  if (writeCompletions(allCompletions)) {
     return newCompletion;
   }
   return null;
 }
 
 // Remove habit completion for a date
-export function markHabitIncomplete(habitId: string, date: string): boolean {
+export function markHabitIncomplete(habitId: string, userId: string, date: string): boolean {
   const completions = readCompletions();
-  const filteredCompletions = completions.filter(c => !(c.habitId === habitId && c.date === date));
+  const filteredCompletions = completions.filter(c => !(c.habitId === habitId && c.userId === userId && c.date === date));
 
   if (filteredCompletions.length === completions.length) {
     return false;
@@ -181,26 +186,26 @@ export function markHabitIncomplete(habitId: string, date: string): boolean {
 }
 
 // Get habit completions in date range
-export function getHabitCompletionsInRange(habitId: string, startDate: string, endDate: string): HabitCompletion[] {
+export function getHabitCompletionsInRange(habitId: string, userId: string, startDate: string, endDate: string): HabitCompletion[] {
   const completions = readCompletions();
   const start = new Date(startDate);
   const end = new Date(endDate);
 
   return completions.filter(c => {
-    if (c.habitId !== habitId) return false;
+    if (c.habitId !== habitId || c.userId !== userId) return false;
     const completionDate = new Date(c.date);
     return completionDate >= start && completionDate <= end;
   });
 }
 
 // Get habit streak count
-export function getHabitStreak(habitId: string): number {
-  const habit = getHabitById(habitId);
+export function getHabitStreak(habitId: string, userId: string): number {
+  const habit = getHabitById(habitId, userId);
   if (!habit) return 0;
 
   const completions = readCompletions();
   const habitCompletions = completions
-    .filter(c => c.habitId === habitId)
+    .filter(c => c.habitId === habitId && c.userId === userId)
     .sort((a, b) => b.date.localeCompare(a.date));
 
   if (habitCompletions.length === 0) return 0;
@@ -246,15 +251,15 @@ export function getHabitStreak(habitId: string): number {
 }
 
 // Get habits for a specific date with completion status
-export function getHabitsForDate(date: string): Array<Habit & { completed: boolean; streak?: number }> {
-  const habits = readHabits();
+export function getHabitsForDate(date: string, userId: string): Array<Habit & { completed: boolean; streak?: number }> {
+  const habits = readHabits().filter(h => h.userId === userId);
   const completions = readCompletions();
   const targetDate = new Date(date);
   const dayOfWeek = targetDate.getDay();
 
   return habits.map(habit => {
     const isCompleted = completions.some(
-      c => c.habitId === habit.id && c.date === date
+      c => c.habitId === habit.id && c.userId === userId && c.date === date
     );
 
     // Check if habit should be shown on this date
@@ -263,7 +268,7 @@ export function getHabitsForDate(date: string): Array<Habit & { completed: boole
     return {
       ...habit,
       completed: isCompleted,
-      streak: shouldShow ? getHabitStreak(habit.id) : undefined,
+      streak: shouldShow ? getHabitStreak(habit.id, userId) : undefined,
     };
   }).filter(habit => {
     // Filter based on frequency
@@ -273,7 +278,7 @@ export function getHabitsForDate(date: string): Array<Habit & { completed: boole
 }
 
 // Get completion status for a habit on a specific date
-export function getHabitCompletion(habitId: string, date: string): boolean {
+export function getHabitCompletion(habitId: string, userId: string, date: string): boolean {
   const completions = readCompletions();
-  return completions.some(c => c.habitId === habitId && c.date === date);
+  return completions.some(c => c.habitId === habitId && c.userId === userId && c.date === date);
 }

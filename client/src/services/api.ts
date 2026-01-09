@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { Event, CreateEventDTO, UpdateEventDTO } from '../hooks/useEvents';
+import type { AuthResponse, LoginCredentials, RegisterCredentials } from '../types/auth';
 
 // Todo types
 export interface Todo {
@@ -76,6 +77,28 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// Add JWT token to requests
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Handle 401 responses
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const eventApi = {
   // Get all events
@@ -208,6 +231,32 @@ export const habitApi = {
   getCompletions: async (id: string, start: string, end: string): Promise<HabitCompletion[]> => {
     const response = await api.get(`/habits/${id}/completions?start=${start}&end=${end}`);
     return response.data.data;
+  },
+};
+
+export const authApi = {
+  // Register
+  register: async (credentials: RegisterCredentials): Promise<AuthResponse> => {
+    const response = await api.post('/auth/register', credentials);
+    return response.data.data;
+  },
+
+  // Login
+  login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
+    const response = await api.post('/auth/login', credentials);
+    return response.data.data;
+  },
+
+  // Get current user
+  getCurrentUser: async (): Promise<{ userId: string; email: string }> => {
+    const response = await api.get('/auth/me');
+    return response.data.data;
+  },
+
+  // Logout (client-side only)
+  logout: () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
   },
 };
 

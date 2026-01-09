@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { authenticate } from '../middleware/auth';
 import {
   getAllEventsController,
   getEventByIdController,
@@ -8,6 +9,9 @@ import {
 } from '../controllers/eventController';
 
 const router = Router();
+
+// Apply authentication to all routes
+router.use(authenticate);
 
 // Get all events
 router.get('/', getAllEventsController);

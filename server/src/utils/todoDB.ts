@@ -43,18 +43,19 @@ export function writeTodos(todos: Todo[]): boolean {
 }
 
 // Get all todos
-export function getAllTodos(): Todo[] {
-  return readTodos();
+export function getAllTodos(userId: string): Todo[] {
+  const todos = readTodos();
+  return todos.filter(todo => todo.userId === userId);
 }
 
 // Get todo by ID
-export function getTodoById(id: string): Todo | undefined {
+export function getTodoById(id: string, userId: string): Todo | undefined {
   const todos = readTodos();
-  return todos.find(todo => todo.id === id);
+  return todos.find(todo => todo.id === id && todo.userId === userId);
 }
 
 // Create new todo
-export function createTodo(todoData: Omit<Todo, 'id' | 'createdAt' | 'updatedAt'>): Todo | null {
+export function createTodo(todoData: Omit<Todo, 'id' | 'createdAt' | 'updatedAt' | 'userId'>, userId: string): Todo | null {
   const todos = readTodos();
   const { v4: uuidv4 } = require('uuid');
   const now = new Date().toISOString();
@@ -62,6 +63,7 @@ export function createTodo(todoData: Omit<Todo, 'id' | 'createdAt' | 'updatedAt'
   const newTodo: Todo = {
     ...todoData,
     id: uuidv4(),
+    userId,
     createdAt: now,
     updatedAt: now,
     completedAt: todoData.completed ? now : undefined,
@@ -76,9 +78,9 @@ export function createTodo(todoData: Omit<Todo, 'id' | 'createdAt' | 'updatedAt'
 }
 
 // Update todo
-export function updateTodo(id: string, updates: UpdateTodoDTO): Todo | null {
+export function updateTodo(id: string, userId: string, updates: UpdateTodoDTO): Todo | null {
   const todos = readTodos();
-  const index = todos.findIndex(todo => todo.id === id);
+  const index = todos.findIndex(todo => todo.id === id && todo.userId === userId);
 
   if (index === -1) {
     return null;
@@ -88,6 +90,7 @@ export function updateTodo(id: string, updates: UpdateTodoDTO): Todo | null {
     ...todos[index],
     ...updates,
     id,
+    userId,
     updatedAt: new Date().toISOString(),
     completedAt: updates.completed === true
       ? (todos[index].completedAt || new Date().toISOString())
@@ -105,9 +108,9 @@ export function updateTodo(id: string, updates: UpdateTodoDTO): Todo | null {
 }
 
 // Delete todo
-export function deleteTodo(id: string): boolean {
+export function deleteTodo(id: string, userId: string): boolean {
   const todos = readTodos();
-  const filteredTodos = todos.filter(todo => todo.id !== id);
+  const filteredTodos = todos.filter(todo => !(todo.id === id && todo.userId === userId));
 
   if (filteredTodos.length === todos.length) {
     return false;
@@ -117,9 +120,9 @@ export function deleteTodo(id: string): boolean {
 }
 
 // Toggle todo completion
-export function toggleTodoCompletion(id: string): Todo | null {
+export function toggleTodoCompletion(id: string, userId: string): Todo | null {
   const todos = readTodos();
-  const index = todos.findIndex(todo => todo.id === id);
+  const index = todos.findIndex(todo => todo.id === id && todo.userId === userId);
 
   if (index === -1) {
     return null;
@@ -142,8 +145,8 @@ export function toggleTodoCompletion(id: string): Todo | null {
 }
 
 // Get todos in date range
-export function getTodosInRange(startDate: string, endDate: string): Todo[] {
-  const todos = readTodos();
+export function getTodosInRange(startDate: string, endDate: string, userId: string): Todo[] {
+  const todos = readTodos().filter(todo => todo.userId === userId);
   const start = new Date(startDate);
   const end = new Date(endDate);
 

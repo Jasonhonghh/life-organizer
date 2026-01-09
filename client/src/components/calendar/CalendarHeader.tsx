@@ -1,7 +1,12 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, Calendar, CheckCircle, Flame } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, CheckCircle, Flame, LogOut } from 'lucide-react';
 
 type CalendarView = 'month' | 'week' | 'day';
+
+interface User {
+  id: string;
+  email: string;
+}
 
 interface CalendarHeaderProps {
   currentDate: Date;
@@ -14,6 +19,8 @@ interface CalendarHeaderProps {
   onAddEvent: () => void;
   onAddTodo: () => void;
   onAddHabit: () => void;
+  user?: User | null;
+  onLogout?: () => void;
 }
 
 export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
@@ -26,6 +33,8 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   onAddEvent,
   onAddTodo,
   onAddHabit,
+  user,
+  onLogout,
 }) => {
   return (
     <div className="glass-card mx-4 mt-4 mb-2 rounded-2xl px-6 py-4 slide-in-right">
@@ -126,6 +135,18 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               <span>Event</span>
             </button>
           </div>
+          {user && onLogout && (
+            <div className="flex items-center gap-3 ml-4 pl-4 border-l border-gray-300">
+              <span className="text-sm text-gray-600">{user.email}</span>
+              <button
+                onClick={onLogout}
+                className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-200 hover:scale-105"
+                title="Logout"
+              >
+                <LogOut size={16} className="text-gray-600" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

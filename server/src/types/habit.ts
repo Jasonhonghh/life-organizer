@@ -1,5 +1,6 @@
 export interface Habit {
   id: string;
+  userId: string;
   title: string;
   description: string;
   frequency: 'daily' | 'weekly';
@@ -11,6 +12,7 @@ export interface Habit {
 
 export interface HabitCompletion {
   habitId: string;
+  userId: string;
   date: string;
   completedAt: string;
 }

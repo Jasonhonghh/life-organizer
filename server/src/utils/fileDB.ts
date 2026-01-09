@@ -43,18 +43,19 @@ export function writeEvents(events: Event[]): boolean {
 }
 
 // Get all events
-export function getAllEvents(): Event[] {
-  return readEvents();
+export function getAllEvents(userId: string): Event[] {
+  const events = readEvents();
+  return events.filter(event => event.userId === userId);
 }
 
 // Get event by ID
-export function getEventById(id: string): Event | undefined {
+export function getEventById(id: string, userId: string): Event | undefined {
   const events = readEvents();
-  return events.find(event => event.id === id);
+  return events.find(event => event.id === id && event.userId === userId);
 }
 
 // Create new event
-export function createEvent(eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>): Event | null {
+export function createEvent(eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt' | 'userId'>, userId: string): Event | null {
   const events = readEvents();
   const { v4: uuidv4 } = require('uuid');
   const now = new Date().toISOString();
@@ -62,6 +63,7 @@ export function createEvent(eventData: Omit<Event, 'id' | 'createdAt' | 'updated
   const newEvent: Event = {
     ...eventData,
     id: uuidv4(),
+    userId,
     createdAt: now,
     updatedAt: now,
   };
@@ -75,9 +77,9 @@ export function createEvent(eventData: Omit<Event, 'id' | 'createdAt' | 'updated
 }
 
 // Update event
-export function updateEvent(id: string, updates: Partial<Event>): Event | null {
+export function updateEvent(id: string, userId: string, updates: Partial<Event>): Event | null {
   const events = readEvents();
-  const index = events.findIndex(event => event.id === id);
+  const index = events.findIndex(event => event.id === id && event.userId === userId);
 
   if (index === -1) {
     return null;
@@ -86,7 +88,8 @@ export function updateEvent(id: string, updates: Partial<Event>): Event | null {
   const updatedEvent: Event = {
     ...events[index],
     ...updates,
-    id, // Ensure ID cannot be changed
+    id,
+    userId,
     updatedAt: new Date().toISOString(),
   };
 
@@ -99,12 +102,12 @@ export function updateEvent(id: string, updates: Partial<Event>): Event | null {
 }
 
 // Delete event
-export function deleteEvent(id: string): boolean {
+export function deleteEvent(id: string, userId: string): boolean {
   const events = readEvents();
-  const filteredEvents = events.filter(event => event.id !== id);
+  const filteredEvents = events.filter(event => !(event.id === id && event.userId === userId));
 
   if (filteredEvents.length === events.length) {
-    return false; // Event not found
+    return false;
   }
 
   return writeEvents(filteredEvents);
